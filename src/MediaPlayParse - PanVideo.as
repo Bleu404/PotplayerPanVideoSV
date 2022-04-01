@@ -149,7 +149,7 @@ bool PlaylistCheck(const string & in path)
 
 array < dictionary > PlaylistParse(const string & in path)
 {
-	HostOpenConsole();
+	//HostOpenConsole();
 	array < dictionary > ret;
 	array < string > temp = path.split("##");
 	JsonValue Itemlist;
