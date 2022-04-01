@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.0
+// @version      1.0.1
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -28,8 +28,6 @@
     const tools = {
         runFunction(funcName, attrval) {
             switch (document.domain) {
-                case 'pan.baidu.com':
-                    return baidu[funcName](attrval);
                 case 'xunlei.com':
                     return xunlei[funcName](attrval);
                 case 'www.aliyundrive.com':
@@ -160,8 +158,8 @@
         },
         async finallyFunc() {
             Option.header["clientid"] = Option["clientid"];
-            await tools.putFileInWebdav('xunlei.txt', JSON.stringify(Option.list));
-            unsafeWindow.location.href = `potplayer://panvideo##xunlei##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/xunlei.txt##${bleuc.cun}##${bleuc.cpw}`;
+            await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));
+            unsafeWindow.location.href = `potplayer://panvideo##xunlei##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
         }
     }
     const aliyun = {
@@ -192,7 +190,7 @@
         async updateFile(item) {
             Option["list"].push({
                 "title": item.name,
-                "url": item.id
+                "url": "https://"+item.id
             });
         },
         async openNextDir(item) {
@@ -245,8 +243,8 @@
             Option.header["drive_id"] =token.default_drive_id;
         },
         async finallyFunc(){
-            await tools.putFileInWebdav('aliyun.txt', JSON.stringify(Option.list));
-            unsafeWindow.location.href = `potplayer://panvideo##aliyun##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/aliyun.txt##${bleuc.cun}##${bleuc.cpw}`;
+            await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));
+            unsafeWindow.location.href = `potplayer://panvideo##aliyun##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
         }
     }
     const main = {

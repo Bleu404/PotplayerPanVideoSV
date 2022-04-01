@@ -72,7 +72,20 @@ bool setQuality(string name,string url,array < dictionary > & QualityList)
 
 bool PlayitemCheck(const string & in path)
 {
-	return path.find("panvideo") == 0;
+	if(path.find("panvideo") == 0)
+	{
+		if(HEADERS.isNull()){
+			HostPrintUTF8("重新获取头信息");
+			string tempstr = HostFileRead(HostFileOpen("Extension\\Media\\PlayParse\\panvideo.txt"), 500);
+			tempstr.replace(" ","");
+			array < string > temp = tempstr.split("\r\n");
+			tempstr = HostUrlGetStringWithAPI("https://"+temp[0]+"/PanPlaylist/panvideo.txt", USERAGENT, "authorization: Basic "+HostBase64Enc(temp[1]+":"+temp[2]), getData(""), false);
+			JSON.parse(tempstr, HEADERS);
+			HEADERS = HEADERS["header"];
+		}
+		return true;
+	}
+	return false;
 }
 
 string PlayitemParse(const string & in path, dictionary & MetaData, array < dictionary > & QualityList)
@@ -113,6 +126,7 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 	}
 	if(temp[1]=="aliyun")
 	{
+		temp[2].replace("https://","");
 		string url = "https://api.aliyundrive.com/v2/file/get_video_preview_play_info";
 		tempstr = HostUrlGetString(url, USERAGENT, getHeaders("al_0"),getData("al_item")+temp[2]+"\"}", false);
 		JSON.parse(tempstr,jsonVal);
@@ -157,6 +171,7 @@ array < dictionary > PlaylistParse(const string & in path)
 	HostPrintUTF8(temp[3]);
 	tempstr = HostUrlGetStringWithAPI(temp[3], USERAGENT, "authorization: Basic "+HostBase64Enc(temp[4]+":"+temp[5]), getData(""), false);
 	JSON.parse(tempstr, Itemlist);
+	Itemlist = Itemlist["list"];
 	HostPrintUTF8(tempstr);
 	for (int i = 0; i < Itemlist.size(); i++) 
 	{
