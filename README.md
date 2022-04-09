@@ -27,6 +27,18 @@
     123456789
   ```
 
+## 字幕
+
+* 1.从opensubtitles.com获取英文字幕，因为每人网络状况不同，可能出现开启字幕无法加载视频的状况；
+
+* 2.注册账号并开启API之后每个api每天100（或更多）个字幕；
+  
+* 3.修改`MediaPlayParse - PanVideo.as`中的代码，开启字幕；
+
+* 3.1 添加一个api：`array <string> apikey ={"api"}`;添加两个api：`array <string> apikey ={"api_1","api_2"}`；
+  
+* 3.2 `int subcount = 0;`//每个视频获取字幕个数,设置过多，可能无法加载视频。
+
 ## 其他
 
 * 1.可以在PotPlayer中切换画质；

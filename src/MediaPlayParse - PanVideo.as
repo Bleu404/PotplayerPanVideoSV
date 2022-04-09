@@ -57,15 +57,22 @@ string getHeaders(string flag)
 }
 bool setQuality(string name,string url,array < dictionary > & QualityList)
 {
+	array<string> qualities = {"搁置","360", "480","540","720", "1080"};
 	dictionary item;
-	if(name == "FHD")name = "1080p";
-	if(name == "HD")name = "720p";
-	if(name == "SD")name = "540p";
-	if(name == "LD")name = "360p";
+	if(name == "FHD")name = "超清 1080p";
+	if(name == "HD")name = "高清 720p";
+	if(name == "SD")name = "标清 540p";
+	if(name == "LD")name = "流畅 360p";
+	string temp = HostRegExpParse(name,"([0-9]+)");
+	HostPrintUTF8(temp);
+	if (temp!="" && qualities.find(temp) > 0) {
+		quIndex = qualities.find(temp);
+	} else {
+		quIndex++;
+	}
 	item["itag"] = quIndex;
 	item["url"] = url;
 	item["quality"] = name;
-	quIndex++;
 	QualityList.insertLast(item);
 	return true;
 }
@@ -88,6 +95,38 @@ bool PlayitemCheck(const string & in path)
 	return false;
 }
 
+//从opensubtitles.com获取字幕,注册账号并开启API之后每个api每天100（或更多）个字幕
+array <dictionary> searchSubtitle(string subname)
+{
+	array <string> apikey ={};//api用户信息必填
+	int subcount = 0;//每个视频获取字幕个数,设置过多，可能无法加载视频
+	dictionary subitem;
+	array <dictionary> sub;
+	JsonValue userjv,fileinfo;
+	string subURL,retString;
+	if(subcount == 0||apikey.size() == 0)return sub;
+	subURL = "https://api.opensubtitles.com/api/v1/subtitles/?languages=en&query="+subname;
+	retString = HostUrlGetString(subURL, "PotplayerPanVideoSV", "Content-Type: application/json\r\nApi-Key: "+apikey[0],getData(""), false);
+	if(retString == "")return sub;
+	JSON.parse(retString,userjv);
+	HostPrintUTF8("搜索字幕完毕");
+	for(int i = 0;i<subcount;i++)
+	{
+		int index = i%apikey.size();
+		string fileid = userjv["data"][i]["attributes"]["files"][0]["file_id"].asString();
+		retString = HostUrlGetString("https://api.opensubtitles.com/api/v1/download", "PotplayerPanVideoSV", "Content-Type: application/json\r\nApi-Key: "+apikey[index],"{\"file_id\":"+fileid+"}", false);
+		if(retString == "")continue;
+		JSON.parse(retString,fileinfo);
+		subitem["name"] = fileinfo["file_name"].asString();
+		subitem["url"] = fileinfo["link"].asString();		
+		HostPrintUTF8(string(subitem["name"]));
+		sub.insertLast(subitem);
+		HostPrintUTF8("还剩下："+fileinfo["remaining"].asString());
+		HostSleep(100);
+	}
+	return sub;
+}
+
 string PlayitemParse(const string & in path, dictionary & MetaData, array < dictionary > & QualityList)
 {
 	string ret;
@@ -95,8 +134,9 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 	array < string > temp = path.split("##");
 	if (!PlayitemCheck(path)) return ret;
 	string tempstr;
-	quIndex = 1;
+	quIndex = 5;
 
+	//HostOpenConsole();
 	if(temp[1]=="xunlei")
 	{
 		ret = HostUrlGetString(temp[2], USERAGENT, getHeaders("xl_1"), getData(""), false);
@@ -110,6 +150,7 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 		}
 		JSON.parse(ret, jsonVal);
 
+		setQuality("原画 300KB/s",jsonVal["web_content_link"].asString(),QualityList);
 		for (int i = 0; i < jsonVal["medias"].size(); i++)
 		{
 			JsonValue mary = jsonVal["medias"][i];
@@ -122,12 +163,19 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 				}
 			} 
 		}
-		setQuality("原画 300KB/s",jsonVal["web_content_link"].asString(),QualityList);
 	}
 	if(temp[1]=="aliyun")
 	{
 		temp[2].replace("https://","");
-		string url = "https://api.aliyundrive.com/v2/file/get_video_preview_play_info";
+		
+		string url = "https://api.aliyundrive.com/v2/file/get_download_url";
+		tempstr = HostUrlGetString(url, USERAGENT, getHeaders("al_0"),getData("al_item")+temp[2]+"\"}", false);
+		JSON.parse(tempstr,jsonVal);
+		//HostPrintUTF8(jsonVal["url"].asString());
+		HostSetUrlHeaderHTTP(jsonVal["url"].asString(), "referer: https://www.aliyundrive.com/");
+		setQuality("原画",jsonVal["url"].asString(),QualityList);
+
+		url = "https://api.aliyundrive.com/v2/file/get_video_preview_play_info";
 		tempstr = HostUrlGetString(url, USERAGENT, getHeaders("al_0"),getData("al_item")+temp[2]+"\"}", false);
 		JSON.parse(tempstr,jsonVal);
 		JsonValue templist = jsonVal["video_preview_play_info"]["live_transcoding_task_list"];
@@ -140,13 +188,8 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 				ret = templist[i]["url"].asString();
 			}
 		}
-		url = "https://api.aliyundrive.com/v2/file/get_download_url";
-		tempstr = HostUrlGetString(url, USERAGENT, getHeaders("al_0"),getData("al_item")+temp[2]+"\"}", false);
-		JSON.parse(tempstr,jsonVal);
-		HostPrintUTF8(jsonVal["url"].asString());
-		HostSetUrlHeaderHTTP(jsonVal["url"].asString(), "referer: https://www.aliyundrive.com/");
-		setQuality("原画",jsonVal["url"].asString(),QualityList);
 	}
+	MetaData["subtitle"] = searchSubtitle(temp[3]);
 	return ret;
 }
 
@@ -168,15 +211,15 @@ array < dictionary > PlaylistParse(const string & in path)
 	array < string > temp = path.split("##");
 	JsonValue Itemlist;
 	string tempstr;
-	HostPrintUTF8(temp[3]);
+	//HostPrintUTF8(temp[3]);
 	tempstr = HostUrlGetStringWithAPI(temp[3], USERAGENT, "authorization: Basic "+HostBase64Enc(temp[4]+":"+temp[5]), getData(""), false);
 	JSON.parse(tempstr, Itemlist);
 	Itemlist = Itemlist["list"];
-	HostPrintUTF8(tempstr);
+	//HostPrintUTF8(tempstr);
 	for (int i = 0; i < Itemlist.size(); i++) 
 	{
-		dictionary item;
-		item["url"] = "panvideo##"+temp[1]+"##"+Itemlist[i]["url"].asString();
+		dictionary item,subitem;
+		item["url"] = "panvideo##"+temp[1]+"##"+Itemlist[i]["url"].asString()+"##"+Itemlist[i]["title"].asString();
 		item["title"] = Itemlist[i]["title"].asString();
 		ret.insertLast(item);
 	}
