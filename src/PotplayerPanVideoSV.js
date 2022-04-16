@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.1
+// @version      1.0.2
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -10,7 +10,7 @@
 // @license      MIT
 // @match        https://pan.xunlei.com/*
 // @match        https://www.aliyundrive.com/*
-// @icon         https://img.icons8.com/ios-filled/50/000000/cloud-mail.png
+// @icon         https://cdn.jsdelivr.net/gh/Bleu404/PRPO@latest/png/ppvsv.png
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
@@ -24,7 +24,7 @@
 (function () {
     'use strict';
     let bleuc,contextMenu, itemsInfo, arryIndex, Option, observer;
-    const flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v";
+    const flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,";
     const tools = {
         runFunction(funcName, attrval) {
             switch (document.domain) {
