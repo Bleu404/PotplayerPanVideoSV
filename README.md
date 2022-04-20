@@ -25,7 +25,7 @@
 
 ## 字幕
 
-* 1.从opensubtitles.com获取英文字幕，因为每人网络状况不同，可能出现开启字幕无法加载视频的状况；
+* 1.从[opensubtitles.com](https://www.opensubtitles.com/)获取英文字幕，因为每人网络状况不同，可能出现开启字幕无法加载视频的状况；
 
 * 2.注册账号并开启API之后每个api每天100（或更多）个字幕；
   
