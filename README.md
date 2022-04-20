@@ -29,9 +29,8 @@
   
 * 3.修改`MediaPlayParse - PanVideo.as`中的代码，开启字幕；
 
-* 3.1 添加一个api：`array <string> apikey ={"api"}`;添加两个api：`array <string> apikey ={"api_1","api_2"}`；
-  
-* 3.2 `int subcount = 0;`//每个视频获取字幕个数,设置过多，可能无法加载视频。
+    >3.1 添加一个api：`array <string> apikey ={"api"}`;添加两个api：`array <string> apikey ={"api_1","api_2"}`；  
+    3.2 `int subcount = 0;`//每个视频获取字幕个数,设置过多，可能无法加载视频。
 
 ## 其他
 
