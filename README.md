@@ -16,12 +16,10 @@
 * 4.选择好需要播放的视频，`右键`=>`PotPlayer打开`;
   
 * 5.为了再次打开potplayer，也能播放。在`Extension\Media\PlayParse`文件夹下新建`panvideo.txt`,文件内容为`主机`、`用户`、`密码`，格式如下
-  
-  ```txt
-    dav.jianguoyun.com/dav
-    12345678@qq.com
+
+     >dav.jianguoyun.com/dav  
+    12345678@qq.com  
     123456789
-  ```
 
 ## 字幕
 
