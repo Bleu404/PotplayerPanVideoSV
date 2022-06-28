@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.3
+// @version      1.0.4
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -17,6 +17,10 @@
 // @grant        GM_registerMenuCommand
 // @grant        unsafeWindow
 // @connect      *
+// @connect      xunlei.com
+// @connect      aliyundrive.com
+// @connect      jianguoyun.com
+// @connect      teracloud.jp
 // @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
 // @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
 // ==/UserScript==
