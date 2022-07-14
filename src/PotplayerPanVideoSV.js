@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.4
+// @version      1.0.5
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -163,7 +163,7 @@
         async finallyFunc() {
             Option.header["clientid"] = Option["clientid"];
             await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));
-            unsafeWindow.location.href = `potplayer://panvideo##xunlei##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
+            unsafeWindow.location.href = `potplayer://panvideo##xunlei##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
         }
     }
     const aliyun = {
@@ -248,7 +248,7 @@
         },
         async finallyFunc(){
             await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));
-            unsafeWindow.location.href = `potplayer://panvideo##aliyun##${JSON.stringify(Option.header)}##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
+            unsafeWindow.location.href = `potplayer://panvideo##aliyun##https://${bleuc.cip}/PanPlaylist/panvideo.txt##${bleuc.cun}##${bleuc.cpw}`;
         }
     }
     const main = {

@@ -27,7 +27,7 @@ string GetTitle()
 
 string GetVersion()
 {
-	return "1";
+	return "1.1";
 }
 
 string GetDesc()
@@ -198,7 +198,7 @@ bool PlaylistCheck(const string & in path)
 	array < string > temp = path.split("##");
 	if (path.find("panvideo") == 0) 
 	{
-		JSON.parse(HostUrlDecode(temp[2]), HEADERS); 
+		//JSON.parse(HostUrlDecode(temp[2]), HEADERS); 
 		return true;
 	}
 	return false;
@@ -212,8 +212,9 @@ array < dictionary > PlaylistParse(const string & in path)
 	JsonValue Itemlist;
 	string tempstr;
 	//HostPrintUTF8(temp[3]);
-	tempstr = HostUrlGetStringWithAPI(temp[3], USERAGENT, "authorization: Basic "+HostBase64Enc(temp[4]+":"+temp[5]), getData(""), false);
+	tempstr = HostUrlGetStringWithAPI(temp[2], USERAGENT, "authorization: Basic "+HostBase64Enc(temp[3]+":"+temp[4]), getData(""), false);
 	JSON.parse(tempstr, Itemlist);
+	HEADERS = Itemlist["header"];
 	Itemlist = Itemlist["list"];
 	//HostPrintUTF8(tempstr);
 	for (int i = 0; i < Itemlist.size(); i++) 
