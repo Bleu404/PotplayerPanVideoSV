@@ -1,5 +1,7 @@
 # PotplayerPanVideoSV
 
+***如果发现不能使用，请按照步骤更新两个脚本。***
+
 ## 步骤
 
 * 1.打开PotPlayer安装路径，选择目录`Extension\Media\PlayParse`，将复制的`MediaPlayParse - PanVideo.as`和`MediaPlayParse - PanVideo.ico`文件粘贴;
