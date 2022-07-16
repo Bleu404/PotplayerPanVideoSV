@@ -32,8 +32,11 @@
 * 3.修改`MediaPlayParse - PanVideo.as`中的代码，开启字幕；
 
     >3.1 添加一个api：`array <string> apikey ={"api"};`添加两个api：`array <string> apikey ={"api_1","api_2"};`  
-    3.2 `int subcount = 0;`//每个视频获取字幕个数,设置过多，可能无法加载视频。
-
+    >>注意代码其中`,` `"` `;` 均为英文字符  
+    
+    >3.2 `int subcount = 0;`//每个视频获取字幕个数,设置过多，可能无法加载视频。
+* 4.字幕api填写示例如下   
+![字幕api填写](https://fastly.jsdelivr.net/gh/Bleu404/PotplayerPanVideoSV@main/字幕api填写.png)
 ## 其他
 
 * 1.可以在PotPlayer中切换画质；
@@ -42,4 +45,4 @@
 
 * 3.阿里云盘，支持选择原画，链接的有效期变长了。
   
-![画质选择](https://cdn.jsdelivr.net/gh/Bleu404/PotplayerPanVideoSV@1.0.0/清晰度选择.png)
+![画质选择](https://fastly.jsdelivr.net/gh/Bleu404/PotplayerPanVideoSV@main/清晰度选择.png)
