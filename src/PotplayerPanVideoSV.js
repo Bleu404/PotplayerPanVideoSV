@@ -41,7 +41,7 @@
             }
         },
         checkFileType(name) {
-            let type = name.substring(name.lastIndexOf('.')) || "bleu"
+            let type = name.toLowerCase().substring(name.lastIndexOf('.')) || "bleu"
             return flieTypeStr.indexOf(`${type},`) > 0 ? true : false
         },
         async putFileInWebdav(name, info) {
