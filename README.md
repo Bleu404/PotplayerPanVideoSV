@@ -2,6 +2,8 @@
 
 ***如果发现不能使用，请按照步骤更新两个脚本。***
 
+**没有网盘，或是不想用网盘，只想在线看视频，跳转到[Github_PotplayerM3U8](https://github.com/Bleu404/PotplayerM3U8)**
+
 ## 步骤
 
 * 1.打开PotPlayer安装路径，选择目录`Extension\Media\PlayParse`，将复制的`MediaPlayParse - PanVideo.as`和`MediaPlayParse - PanVideo.ico`文件粘贴;
