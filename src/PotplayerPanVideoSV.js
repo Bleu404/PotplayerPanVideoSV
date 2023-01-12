@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.5
+// @version      1.0.6
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -22,42 +22,38 @@
 // @connect      jianguoyun.com
 // @connect      teracloud.jp
 // @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.1.0/dist/sweetalert2.all.min.js
-// @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.1/bleutools.min.js
+// @require      https://fastly.jsdelivr.net/npm/bleutools@1.0.2/bleutools.min.js
 // ==/UserScript==
 
 (function () {
     'use strict';
-    let bleuc,contextMenu, itemsInfo, arryIndex, Option, observer;
+    let bleuc,contextMenu, itemsInfo, arryIndex, Option, observer,cloud;
     const flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,";
     const tools = {
-        runFunction(funcName, attrval) {
+        getCloudName() {
             switch (document.domain) {
                 case 'xunlei.com':
-                    return xunlei[funcName](attrval);
+                    cloud = xunlei;
+                    break;
                 case 'www.aliyundrive.com':
-                    return aliyun[funcName](attrval);
-                default:
-                    return null;
+                    cloud = aliyun;
+                    break;
             }
         },
         checkFileType(name) {
             let type = name.toLowerCase().substring(name.lastIndexOf('.')) || "bleu"
-            return flieTypeStr.indexOf(`${type},`) > 0 ? true : false
+            return flieTypeStr.indexOf(`${type},`) >= 0 ? true : false
         },
         async putFileInWebdav(name, info) {
             let header = {
                 "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
             }
             let url = `https://${bleuc.cip}/PanPlaylist`;
-            await bleu.XHR('PROPFIND', url, undefined, header, undefined).then(async (res) => {
-                if (!(res.status >= 200 && res.status < 300)) {
-                    await bleu.XHR('MKCOL', url, undefined, header, undefined)
-                }
-            })
+            await bleu.XHR('PROPFIND', url, undefined, header, undefined).then( () => {}
+            ,async()=>{await bleu.XHR('MKCOL', url, undefined, header, undefined)})
             url = `https://${bleuc.cip}/PanPlaylist/${name}`;
-            await bleu.XHR('PUT',url , info, header, 'xml').then((res) => {
-                res.status >= 200 && res.status < 300 ? bleu.swalInfo(`✅${name}`, 3000, 'center') :
-                    bleu.swalInfo(`❌${name}`, 3000, 'center');
+            await bleu.XHR('PUT',url , info, header, 'xml').then(() => {
+                bleu.swalInfo(`✅${name}`, 3000, 'center');
             }, () => bleu.swalInfo(`❌${name}`, 3000, 'center'))
         },
         checkConfig() {
@@ -119,11 +115,10 @@
             let url = `https://api-pan.xunlei.com/drive/v1/files?limit=100&parent_id=${item.id}&filters={"phase":{"eq":"PHASE_TYPE_COMPLETE"},"trashed":{"eq":false}}&with_audit=true`;
             await bleu.XHR('GET', url, undefined, Option.header).then((res) => {
                 arryIndex++;
-                if (!(res.status >= 200 && res.status < 300)) {bleu.swalInfo("🔴💬刷新页面，重新获取header", '', 'center');return};
-                res.response.files.forEach((item) => {
+                res.files.forEach((item) => {
                     xunlei._pushItem(item);
                 })
-            })
+            },()=>{bleu.swalInfo("❗进出目录之后重新转存", '', 'center')})
         },
         findContext(node) {
             if (node.className === 'pan-content') {
@@ -212,9 +207,10 @@
                 };
             await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
                 arryIndex++;
-                if(!(res.status>=200&&res.status<300)){bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');return}
-                res.response.items.forEach((item)=>{
+                res.items.forEach((item)=>{
                     aliyun._pushItem(item);
+                },()=>{
+                    bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')
                 })
             })
         },
@@ -256,7 +252,7 @@
             observer = new MutationObserver(function (mutations) {
                 for (let mutation of mutations) {
                     if (mutation.type === 'childList') {
-                        tools.runFunction('findContext', mutation.target);
+                        cloud.findContext(mutation.target);
                     }
                 }
             });
@@ -271,25 +267,30 @@
                 itemsInfo = [];
                 arryIndex = 0;
                 Option = {}, Option["list"] = [];
-                tools.runFunction('closeMenu');
-                tools.runFunction('getselectFilesInfo');
-                tools.runFunction('getHeaderInfo');
+                cloud.closeMenu();
+                cloud.getselectFilesInfo();
+                cloud.getHeaderInfo();
+                if (itemsInfo[arryIndex].length === 0) {
+                    bleu.swalInfo(`❌未选择文件转存!`, 3000, 'center')
+                    return;
+                }
                 await main.updateAllFiles(itemsInfo[arryIndex]);
-                tools.runFunction('finallyFunc');
+                Option["list"].length!=0&&cloud.finallyFunc();
             })
         },
         async updateAllFiles(loopArry) {
             for (let index = 0; index < loopArry.length; index++) {
                 if (!loopArry[index].isdir) {
-                    await tools.runFunction('updateFile', loopArry[index]);
+                    await cloud.updateFile(loopArry[index]);
                 } else {
-                    await tools.runFunction('openNextDir', loopArry[index]);
+                    await cloud.openNextDir(loopArry[index]);
                     await main.updateAllFiles(itemsInfo[arryIndex]);
                 }
                 bleu.sleep(800);
             }
         },
     };
+    tools.getCloudName();
     tools.checkConfig();
     bleu.addCssStyle(tools.cssStyle);
     GM_registerMenuCommand('配置WEBDAV', () => {
