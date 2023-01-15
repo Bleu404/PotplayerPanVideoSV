@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.6
+// @version      1.0.7
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -49,7 +49,8 @@
                 "authorization": `Basic ${btoa(`${bleuc.cun}:${bleuc.cpw}`)}`
             }
             let url = `https://${bleuc.cip}/PanPlaylist`;
-            await bleu.XHR('PROPFIND', url, undefined, header, undefined).then( () => {}
+            let method = bleuc.cip.indexOf('teracloud')>0?'GET':'PROPFIND';
+            await bleu.XHR(method, url, undefined, header, undefined).then( () => {}
             ,async()=>{await bleu.XHR('MKCOL', url, undefined, header, undefined)})
             url = `https://${bleuc.cip}/PanPlaylist/${name}`;
             await bleu.XHR('PUT',url , info, header, 'xml').then(() => {
@@ -267,6 +268,7 @@
                 itemsInfo = [];
                 arryIndex = 0;
                 Option = {}, Option["list"] = [];
+                if(!tools.checkConfig())return;
                 cloud.closeMenu();
                 cloud.getselectFilesInfo();
                 cloud.getHeaderInfo();
