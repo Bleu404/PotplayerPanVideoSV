@@ -9,7 +9,7 @@
 
 * 1.打开PotPlayer安装路径，选择目录`Extension\Media\PlayParse`，将复制的`MediaPlayParse - PanVideo.as`和`MediaPlayParse - PanVideo.ico`文件粘贴;
   
-    >MediaPlayParse - PanVideo.as[下载地址](https://github.com/Bleu404/PotplayerPanVideoSV/releases/)
+    >MediaPlayParse - PanVideo.as[下载地址](https://github.com/Bleu404/PotplayerPanVideoSV/raw/main/src/MediaPlayParse%20-%20PanVideo.as)
 
 * 2.脚本管理器安装[`PotplayerPanVideoSV.js`](https://greasyfork.org/scripts/442448-potplayer%E4%BA%91%E7%9B%98-%E4%B8%93%E4%BE%9B%E7%89%88/code/PotPlayer%E4%BA%91%E7%9B%98-%E4%B8%93%E4%BE%9B%E7%89%88.user.js);
 
