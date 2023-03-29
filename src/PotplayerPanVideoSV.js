@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.7
+// @version      1.0.8
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -27,6 +27,7 @@
 
 (function () {
     'use strict';
+    const ORGXHRSRH = XMLHttpRequest.prototype.setRequestHeader;
     let bleuc,contextMenu, itemsInfo, arryIndex, Option, observer,cloud;
     const flieTypeStr = ".wmv,.rmvb,.avi,.mp4,.mkv,.flv,.swf.mpeg4,.mpeg2,.3gp,.mpga,.qt,.rm,.wmz,.wmd,.wvx,.wmx,.wm,.mpg,.mpeg,mov,.asf,.m4v,";
     const tools = {
@@ -37,6 +38,7 @@
                     break;
                 case 'www.aliyundrive.com':
                     cloud = aliyun;
+                    this.hookXHRHeader();
                     break;
             }
         },
@@ -84,6 +86,14 @@
                 <div><label>密码:</label><input type="text" class="bleuc_inp" id="cpw" value="${bleuc.cpw}"/></div></p></div>
                 `;
             return html;
+        },
+        hookXHRHeader() {
+            XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+                if(header == "x-signature"){
+                    aliyun._signature=value;
+                }
+                return ORGXHRSRH.apply(this, arguments);
+            }
         },
         cssStyle: `
             .bleuc_config_item{border-radius: 10px;font-size: 20px;margin: 12px 50px;color: #fff;background: linear-gradient(45deg,#12c2e9, #c471ed, #f64f59);box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);}
@@ -203,8 +213,9 @@
                 },
                 header = {
                     'x-canary': 'client=web,app=adrive,version=v2.4.0',
-                    //'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
-                    authorization: `${token.token_type} ${token.access_token}`
+                    'x-device-id': document.cookie.match(/cna=([^;]*)/)[1],
+                    authorization: `${token.token_type} ${token.access_token}`,
+                    'x-signature':this._signature
                 };
             await bleu.XHR('POST', url, JSON.stringify(data),header).then((res) => {
                 arryIndex++;
@@ -215,6 +226,7 @@
                 })
             })
         },
+        _signature:'',
         findContext(node) {
             node = document.querySelector('ul.ant-dropdown-menu');
             if (!node) return;
@@ -242,6 +254,8 @@
             let token = JSON.parse(localStorage.getItem('token'));
             Option.header["authorization"] =`${token.token_type} ${token.access_token}`;
             Option.header["drive_id"] =token.default_drive_id;
+            Option.header["x-signature"]=this._signature;
+            Option.header["x-device-id"]=document.cookie.match(/cna=([^;]*)/)[1];
         },
         async finallyFunc(){
             await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));

@@ -52,7 +52,7 @@ string getHeaders(string flag)
 {
 	if (flag == "xl_0") return "content-type: text/plain;charset=UTF-8\r\n";
 	if (flag == "xl_1") return "authorization: " + HEADERS['Authorization'].asString() + "\r\n" + "content-type: " + HEADERS['content-type'].asString() + "\r\n" + "x-captcha-token: " + HEADERS['x-captcha-token'].asString() + "\r\n" + "x-device-id: " + HEADERS['x-device-id'].asString();
-	if (flag == "al_0") return "authorization: " + HEADERS['authorization'].asString() + "\r\n" + "referer: https://www.aliyundrive.com/\r\nx-canary: client=web,app=adrive,version=v2.4.0";
+	if (flag == "al_0") return "authorization: " + HEADERS['authorization'].asString() + "\r\n" + "referer: https://www.aliyundrive.com/\r\nx-canary: client=web,app=adrive,version=v2.4.0" + "\r\n" +"x-signature: "+HEADERS['x-signature'].asString()+"\r\nx-device-id: " + HEADERS['x-device-id'].asString();
 	else return "";
 }
 bool setQuality(string name,string url,array < dictionary > & QualityList)
