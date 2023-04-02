@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.8
+// @version      1.0.9
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -158,6 +158,9 @@
                 let temp = localStorage.getItem(key)
                 if (key.indexOf('credentials') === 0) {
                     Option.header["Authorization"] = JSON.parse(temp).token_type + ' ' + JSON.parse(temp).access_token;
+                    Option.header["token_type"] = JSON.parse(temp).token_type;
+                    Option.header["access_token"] = JSON.parse(temp).access_token;
+                    Option.header["refresh_token"] = JSON.parse(temp).refresh_token;
                     Option["clientid"] = key.substring(key.indexOf('_') + 1);
                 }
                 if (key.indexOf('captcha') === 0)
@@ -255,7 +258,7 @@
             Option.header["authorization"] =`${token.token_type} ${token.access_token}`;
             Option.header["drive_id"] =token.default_drive_id;
             Option.header["x-signature"]=this._signature;
-            Option.header["x-device-id"]=document.cookie.match(/cna=([^;]*)/)[1];
+            Option.header["x-device-id"]=document.cookie.match(/cna=([^;]*)/)[1];//decodeURIComponent(localStorage.getItem('APLUS_CNA').substring(9))
         },
         async finallyFunc(){
             await tools.putFileInWebdav('panvideo.txt', JSON.stringify(Option));

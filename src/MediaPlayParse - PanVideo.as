@@ -27,7 +27,7 @@ string GetTitle()
 
 string GetVersion()
 {
-	return "1.1";
+	return "1.2";
 }
 
 string GetDesc()
@@ -40,10 +40,45 @@ string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 JsonReader JSON;
 JsonValue HEADERS;
 int  quIndex;
+string getTimeStamp()
+{
+	datetime a =datetime(); 
+	datetime b =datetime(1970,01,02,00,00,00);//不能设置为1970-01-01
+	return formatInt((a-b+86400)*1000);
+}
+string getCaptchasign(){
+	string srcStr = HEADERS['clientid'].asString() 
+	+ "1.79.8"
+	+ "pan.xunlei.com"
+	+ HEADERS['x-device-id'].asString() 
+	+ getTimeStamp(); 
 
+	array<string> random = {
+	"Slyf1918drRdfvVF"
+	,"8aMrXysG81/lSUK5JjFxGCYCuFrlBL"
+	,"cKt0D7jwHGIn"
+	,"AMJGU1uXzhe"
+	,"opAwUQEXUBQ5XvX955RqIysmA/gMuK"
+	,"zc78nJHR6TQQVyZ0S0kbpc7++527LCm"
+	,"PSCqhcu7OtJ77s1YoC"
+	,"5wVeQ5M8DIURYeHycRKQ6Yr+W"
+	,"o8"
+	,"+HclH3koSIHBuX008jfMNOd94Ygx3"
+	,"J"
+	,"WrB0fGeCp+dIj+R"
+	,"N+wTICzuycJyYRw"
+	,"VCuydo5Y0F3AE"};
+
+	for(int i = 0;i<random.length();i++)
+	{
+		srcStr = HostHashMD5(srcStr+random[i]);
+	}
+	return "1."+srcStr ;
+}
 string getData(string flag)
 {
-	if (flag == "xl_init") return "{\"client_id\":\"" + HEADERS['clientid'].asString() + "\",\"action\":\"get:/drive/v1/about\",\"device_id\":\"" + HEADERS['x-device-id'].asString() + "\",\"captcha_token\":\"" + HEADERS['x-captcha-token'].asString() + "\",\"meta\":{}}";
+	if (flag == "xl_init")  return "{\"client_id\":\"" + HEADERS['clientid'].asString() + "\",\"action\":\"get:/drive/v1/about\",\"device_id\":\"" + HEADERS['x-device-id'].asString() + "\",\"captcha_token\":\"" + HEADERS['x-captcha-token'].asString() + "\",\"meta\":"+"{\"package_name\":\"pan.xunlei.com\",\"client_version\":\"1.79.8\",\"captcha_sign\":\""+getCaptchasign()+"\",\"timestamp\":\""+getTimeStamp()+"\"}"+"}";
+	if (flag == "xl_token") return "{\"client_id\":\"" + HEADERS['clientid'].asString() + "\",\"grant_type\":\"refresh_token\",\"refresh_token\":\"" + HEADERS['refresh_token'].asString() + "\"}";
 	if (flag == "al_item") return "{\"category\":\"live_transcoding\",\"template_id\":\"\",\"drive_id\":\""+HEADERS['drive_id'].asString()+"\",\"file_id\":\"";
 	return "";
 }
@@ -51,7 +86,8 @@ string getData(string flag)
 string getHeaders(string flag)
 {
 	if (flag == "xl_0") return "content-type: text/plain;charset=UTF-8\r\n";
-	if (flag == "xl_1") return "authorization: " + HEADERS['Authorization'].asString() + "\r\n" + "content-type: " + HEADERS['content-type'].asString() + "\r\n" + "x-captcha-token: " + HEADERS['x-captcha-token'].asString() + "\r\n" + "x-device-id: " + HEADERS['x-device-id'].asString();
+	if (flag == "xl_1") return "authorization: " + HEADERS["token_type"].asString()+" "+HEADERS["access_token"].asString() + "\r\n" + "content-type: " + HEADERS['content-type'].asString() + "\r\n" + "x-captcha-token: " + HEADERS['x-captcha-token'].asString() + "\r\n" + "x-device-id: " + HEADERS['x-device-id'].asString();
+	if (flag == "xl_2") return "x-client-id: " + HEADERS['clientid'].asString() + "\r\n" + "x-device-id: " + HEADERS['x-device-id'].asString();
 	if (flag == "al_0") return "authorization: " + HEADERS['authorization'].asString() + "\r\n" + "referer: https://www.aliyundrive.com/\r\nx-canary: client=web,app=adrive,version=v2.4.0" + "\r\n" +"x-signature: "+HEADERS['x-signature'].asString()+"\r\nx-device-id: " + HEADERS['x-device-id'].asString();
 	else return "";
 }
@@ -83,12 +119,14 @@ bool PlayitemCheck(const string & in path)
 	{
 		if(HEADERS.isNull()){
 			HostPrintUTF8("重新获取头信息");
-			string tempstr = HostFileRead(HostFileOpen("Extension\\Media\\PlayParse\\panvideo.txt"), 500);
+			uintptr hfo = HostFileOpen("Extension\\Media\\PlayParse\\panvideo.txt");
+			string tempstr = HostFileRead(hfo, 500);
 			tempstr.replace(" ","");
 			array < string > temp = tempstr.split("\r\n");
 			tempstr = HostUrlGetStringWithAPI("https://"+temp[0]+"/PanPlaylist/panvideo.txt", USERAGENT, "authorization: Basic "+HostBase64Enc(temp[1]+":"+temp[2]), getData(""), false);
 			JSON.parse(tempstr, HEADERS);
 			HEADERS = HEADERS["header"];
+			HostFileClose(hfo);
 		}
 		return true;
 	}
@@ -142,6 +180,14 @@ string PlayitemParse(const string & in path, dictionary & MetaData, array < dict
 		ret = HostUrlGetString(temp[2], USERAGENT, getHeaders("xl_1"), getData(""), false);
 		if(ret==""||ret.find("error")>=0)
 		{
+			if(ret.find("token is expired")>0)
+			{
+				tempstr = HostUrlGetString("https://xluser-ssl.xunlei.com/v1/auth/token", USERAGENT, getHeaders("xl_2"),getData("xl_token"), false);
+				JSON.parse(tempstr,jsonVal);
+				HEADERS['refresh_token'] = jsonVal["refresh_token"];
+				HEADERS['token_type'] = jsonVal["token_type"];
+				HEADERS['access_token'] = jsonVal["access_token"];
+			}
 			string initUrl = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
 			tempstr = HostUrlGetString(initUrl, USERAGENT, getHeaders("xl_0"),getData("xl_init"), false);
 			JSON.parse(tempstr,jsonVal);
