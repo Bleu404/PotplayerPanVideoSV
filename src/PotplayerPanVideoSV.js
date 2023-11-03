@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PotPlayer云盘-专供版
 // @namespace    https://github.com/Bleu404/PotplayerPanVideoSV
-// @version      1.0.9
+// @version      1.1.0
 // @description  此脚本为《PotPlayer播放云盘视频》姊妹篇,需配合MediaPlayParse - PanVideo.as脚本使用。在potplayer中选择画质、字幕,迅雷云盘增加原画，阿里云盘增加时长。
 // @author       bleu
 // @compatible   edge Tampermonkey
@@ -34,6 +34,9 @@
         getCloudName() {
             switch (document.domain) {
                 case 'xunlei.com':
+                    cloud = xunlei;
+                    break;
+                case 'pan.xunlei.com':
                     cloud = xunlei;
                     break;
                 case 'www.aliyundrive.com':
@@ -111,7 +114,7 @@
             main.addClickEvent();
         },
         getselectFilesInfo() {
-            let temp = document.querySelectorAll('li.pan-list-item.pan-list-item-active');
+            let temp = document.querySelectorAll('li.SourceListItem__item--XxpOC.SourceListItem__active--4U0f4');
             temp.forEach((item) => {
                 this._pushItem(item.__vue__.info);
             })
@@ -129,7 +132,10 @@
                 res.files.forEach((item) => {
                     xunlei._pushItem(item);
                 })
-            },()=>{bleu.swalInfo("❗进出目录之后重新转存", '', 'center')})
+            },()=>{
+                bleu.swalInfo("❗进出目录之后重新转存", '', 'center');
+                throw "PPVSV:迅雷-超时，重新转存";
+            })
         },
         findContext(node) {
             if (node.className === 'pan-content') {
@@ -225,7 +231,8 @@
                 res.items.forEach((item)=>{
                     aliyun._pushItem(item);
                 },()=>{
-                    bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center')
+                    bleu.swalInfo("🔴💬刷新页面，重新获取", '', 'center');
+                    throw "PPVSV:阿里-超时，重新转存";
                 })
             })
         },
@@ -289,11 +296,16 @@
                 cloud.closeMenu();
                 cloud.getselectFilesInfo();
                 cloud.getHeaderInfo();
-                if (itemsInfo[arryIndex].length === 0) {
+                if (!itemsInfo[arryIndex]||itemsInfo[arryIndex].length === 0) {
                     bleu.swalInfo(`❌未选择文件转存!`, 3000, 'center')
                     return;
                 }
-                await main.updateAllFiles(itemsInfo[arryIndex]);
+                try {
+                    await main.updateAllFiles(itemsInfo[arryIndex]);
+                } catch (e) {
+                    console.log(e);
+                    return;
+                }
                 Option["list"].length!=0&&cloud.finallyFunc();
             })
         },
@@ -310,7 +322,7 @@
         },
     };
     tools.getCloudName();
-    tools.checkConfig();
+    //tools.checkConfig();
     bleu.addCssStyle(tools.cssStyle);
     GM_registerMenuCommand('配置WEBDAV', () => {
         bleu.swalUI('WEBDAV', tools.configHtml(), '400px').then(tools.saveConfig)
